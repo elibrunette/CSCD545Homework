@@ -9,3 +9,6 @@
  *  @return         return distance between p1 and p2
  */
 __device__ float distance( int p1[], int p2[] );
+
+//GPU solution for the Edge case
+__device __ void GPUEdge<<<grid, block>>>(d_pixels, maxRow, maxCol,edgeWidth);

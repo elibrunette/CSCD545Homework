@@ -15,3 +15,13 @@ __device__ float distance( int p1[], int p2[] ) {
     double square = xDistance * xDistance + yDistance * yDistance;
     return sqrt(square);
 }
+
+//GPU solution for the conpute edge case 
+__device __ void GPUEdge<<<grid, block>>>(d_pixels, maxRow, maxCol,edgeWidth) {
+
+	rowNum = blockIdx.y * blockDim.y + threadIdx.y;
+	colNum = blockIdx.x * blockDix.x + threadIdx.x;
+	int i = rowNum + colNum;
+	
+	
+}

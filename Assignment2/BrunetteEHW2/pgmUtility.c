@@ -57,6 +57,8 @@ int ** pgmRead( char **header, int *numRows, int *numCols, FILE *in  ) {
 			}
 		}
 	}
+	
+	
 	return toReturn;
 }
 
@@ -124,17 +126,39 @@ int calcDistance( int x1, int y1, int x2, int y2 ) {
  *  @return         return 1 if max intensity is changed by the drawing, otherwise return 0;
  */
 int pgmDrawEdge( int **pixels, int numRows, int numCols, int edgeWidth, char **header ) {
-
+	//CPU Solution
 	int x = 0;
 	int y = 0; 
-
 	for(x = 0; x < numRows; x++) {
 		for(y = 0; y < numCols; y++) {
 			if(x < edgeWidth || x >= (numRows - edgeWidth) || y < edgeWidth || y >= (numCols - edgeWidth))
 				pixels[x][y] = 0;
 		}
 	}
-
+	
+	//GPU Solution 
+	int num_bytes = maxRows * maxCol * sizeof(int);
+	
+	//TODO Convert pixels to a 1D int *
+	int * h_pixels = convertArray(pixels, numRows, numCols);//TODO 
+	
+	dim3 grid, block;
+	block_x = 32;
+	block_y = 32;
+	grid.x = ciel((float) maxCol / block.x);
+	grid.y = ciel((float) maxRow / block.y);
+	
+	int * d_pixels = 0;
+	cudaMalloc((void **) &d_pixels, num_bytes);
+	cudaMemcpy(d_pixels, h_pixels, num_bytes, cudaMemcpyHostToDevice);
+	
+	//Kernel call
+	GPUEdge<<<grid, block>>>(d_pixels, maxRow, maxCol,edgeWidth);
+	
+	cudaMemcpy(h_pizels, d_pixels, num_bytes, cudaMemcpyDeviceToHost);
+	cudaFree(d_pixels);
+	
+	overridePixels(pixels, d_pixels);//TODO!!!!!!! 
 	return 0;
 }
 
