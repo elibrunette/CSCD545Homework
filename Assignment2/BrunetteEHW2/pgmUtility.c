@@ -7,6 +7,7 @@
 
 #include "pgmUtility.h"
 #include "pgmProcess.h"
+#include "timing.h"
 
 // Implement or define each function prototypes listed in pgmUtility.h file.
 // NOTE: You can NOT change the input, output, and argument type of the functions in pgmUtility.h
@@ -53,17 +54,29 @@ int pgmDrawCircle( int **pixels, int numRows, int numCols, int centerRow,
 	int x = 0; 
 	int y = 0; 
 
-	//cpu solution
+	double now = 0; 
+	double then = 0; 
+	double difference = 0;
+
+//CPU solution
+	printf("Draw line solution\n");
+	then = currentTime();
 	for( x = 0; x < numRows; x++) {
 		for(y = 0; y < numCols; y++) {
 			if(calcDistance(x, y, centerRow, centerCol) < radius)
 				pixels[x][y] = 0;
 		}
 	}
+	now = currentTime();
+	difference = now - then;
+	printf("%%%%%% Serial code executiontime in second is %lf\n", difference);
 
-	//gpu solution
+//GPU solution
+	then = currentTime();
 	gpuCircleSolution(pixels, numRows, numCols, centerRow, centerCol, radius);
-
+	now = currentTime();
+	difference = now - then;
+	printf("%%%%%% GPU code executiontime in second is %lf\n", difference);
 	return 0;
 }
 
@@ -78,8 +91,15 @@ int calcDistance( int x1, int y1, int x2, int y2 ) {
 }
 
 int pgmDrawEdge( int **pixels, int numRows, int numCols, int edgeWidth, char **header ) {
-	//CPU Solution
-	/*
+	
+	double now = 0; 
+	double then = 0; 
+	double difference = 0;
+
+//CPU Solution
+	printf("Draw edge solution\n");
+	then = currentTime();
+
 	int x = 0;
 	int y = 0; 
 	for(x = 0; x < numRows; x++) {
@@ -88,12 +108,16 @@ int pgmDrawEdge( int **pixels, int numRows, int numCols, int edgeWidth, char **h
 				pixels[x][y] = 0;
 		}
 	}
-	*/
+	now = currentTime();
+	difference = now - then;
+	printf("%%%%%% Serial code executiontime in second is %lf\n", difference);
 	
-	//GPU Solution 
-	//gpuSolutionEdge(pixels, numRows, numCols, edgeWidth);
-
+//GPU Solution 
+	then = currentTime();
 	gpuEdgeSolution(pixels, numRows, numCols, edgeWidth);
+	now = currentTime();
+	difference = now - then;
+	printf("%%%%%% GPU code executiontime in second is %lf\n", difference);
 	return 0;
 }
 
@@ -102,8 +126,13 @@ int pgmDrawLine( int **pixels, int numRows, int numCols, char **header, int p1ro
 	int col = 0; 
 	double slope;
 	double intercept;
+	double now = 0; 
+	double then = 0; 
+	double difference = 0;
 
-/*
+//CPU Solution
+	printf("Draw line solution\n");
+	then = currentTime();
 	if(p1col != p2col) {
 		slope = getSlope(p1col, p1row, p2col, p2row);
 		intercept = getIntercept(slope, p1col, p1row);
@@ -121,10 +150,16 @@ int pgmDrawLine( int **pixels, int numRows, int numCols, char **header, int p1ro
 				pixels[row][p1col] = 0;
 		}
 	}
-*/
-
+	now = currentTime();
+	difference = now - then;
+	printf("%%%%%% Serial code executiontime in second is %lf\n", difference);
+	
+//GPU Solution
+	then = currentTime();
 	gpuLineSolution(pixels, numRows, numCols, p1row, p1col, p2row, p2col);
-
+	now = currentTime();
+	difference = now - then;
+	printf("%%%%%% GPU code executiontime in second is %lf\n", difference);
 	return 0;
 }
 
