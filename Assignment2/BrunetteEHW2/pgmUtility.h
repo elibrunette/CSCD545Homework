@@ -134,5 +134,8 @@ int max(int x1, int x2);
  */
 int pgmWrite( const char **header, const int **pixels, int numRows, int numCols, FILE *out );
 
+int * convertArrayToSingle(int ** pixels, int numRows, int numCols);
+
+void copyArrayBack(int ** pixels, int * toReturn, int numRows, int numCols);
 
 #endif

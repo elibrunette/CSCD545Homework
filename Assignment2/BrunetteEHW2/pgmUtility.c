@@ -138,9 +138,7 @@ int pgmDrawEdge( int **pixels, int numRows, int numCols, int edgeWidth, char **h
 	
 	//GPU Solution 
 	int num_bytes = maxRows * maxCol * sizeof(int);
-	
-	//TODO Convert pixels to a 1D int *
-	int * h_pixels = convertArray(pixels, numRows, numCols);//TODO 
+	int * h_pixels = convertArrayToSingle(pixels, numRows, numCols); 
 	
 	dim3 grid, block;
 	block_x = 32;
@@ -158,9 +156,11 @@ int pgmDrawEdge( int **pixels, int numRows, int numCols, int edgeWidth, char **h
 	cudaMemcpy(h_pizels, d_pixels, num_bytes, cudaMemcpyDeviceToHost);
 	cudaFree(d_pixels);
 	
-	overridePixels(pixels, d_pixels);//TODO!!!!!!! 
+	copyArrayBack(pixels, h_pixels, numRows, numCols);//TODO!!!!!!! 
+	free(h_pixels);
 	return 0;
 }
+
 
 
 /**
@@ -190,7 +190,6 @@ int pgmDrawLine( int **pixels, int numRows, int numCols, char **header, int p1ro
 	double intercept;
 	//printf("made it to draw lines method\n\n");
 	if(p1col != p2col) {
-		
 		slope = getSlope(p1col, p1row, p2col, p2row);
 		intercept = getIntercept(slope, p1col, p1row);
 		for(row = 0; row < numRows; row++) {
@@ -293,4 +292,29 @@ int pgmWrite( const char **header, const int **pixels, int numRows, int numCols,
 	return -1;
 }
 
+int * convertArrayToSingle(int ** pixels, int numRows, int numCols) {
+	int row = 0; 
+	int col = 0; 
+	int i = 0;
+	int * toReturn = (int *) calloc(numRows * numCols, sizeof(int));
+	
+	for(row = 0; row < maxRow; row++) {
+		for(col = 0; col < maxCol; col++) {
+			toReturn[i++] = pixels[row][col];
+		}
+	}
+}
+
+void copyArrayBack(int ** pixels, int * toReturn, int numRows, int numCols) {
+	int row = 0; 
+	int col = 0; 
+	int i = 0; 
+	
+	
+	for(row = 0; row < maxRow; row++) {
+		for(col = 0; col < maxCol; col++) {
+			pixels[row][col] = toReturn[i++]; 
+		}
+	}
+}
 

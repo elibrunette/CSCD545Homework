@@ -17,7 +17,16 @@ __device __ void GPUEdge(d_pixels, maxRow, maxCol,edgeWidth);
 __device__ void GPUCircle(int * d_pixels, int cRow, int cCol, int radius, int maxRow, int maxCol);
 
 //GPU solution for the line case 
-__device__ void GPULine(int * d_pixels, int maxRow, int maxCol, double slope, double intercept);
+__device__ void GPULine(int * d_pixels, int maxRow, int maxCol, int p1row, int p1col, int p2row, int p2col);
+
+//Computes the slope of the given points 
+__device__ double calcSlope(int p1row, int p1col, int p2row, int p2col);
 
 //Computes the intercept of the line given 
 __device__ double calcIntercept( int col, int row, slope);
+
+//returns the max value between x and y
+__device__ int max(int x, int y);
+
+//returns the min value between x and y
+__device__ int min(int x, int y);

@@ -46,19 +46,53 @@ __device__ void GPUCircle(int * d_pixels, int cRow, int cCol, int radius, int ma
 }
 
 //GPU solution for the line
-__device__ void GPULine(int * d_pixels, int maxRow, int maxCol, double slope, double intercept) {
+__device__ void GPULine(int * d_pixels, int maxRow, int maxCol, int p1row, int p1col, int p2row, int p2col) {
 	row = blockIdx.y * blockDim.y + threadIdx.y;
 	col = blockIdx.x * blockDim.x + threadIdx.x;
 	i = row + col;
 	
+	double slope;
+	double intercept;
+	
 	if(row < maxRow && col < maxCol) {
-		double b = calcIntercept(col, row, slope);
-		if(abs(b - intercept) < .5) {
-			toReturn[i] = 0;
+		if(p1col != p2col) {
+			slope = calcSlope(p1row, p1col, p2row, p2col);
+			intercept = calcIntercept(p1col, p1row, slope);
+			double b = calcIntercept(col, row, slope);
+			if(abs(b - intercept) < .5) {
+				d_pixels[i] = 0;
+			}
+		}
+		else {
+			if(col == p1col && row < max(p1row, p2row) && row > min(p1row, p2row)) {
+				d_pixels[i] = 0;
+			}
 		}
 	}
 }
 
+__device__ double calcSlope(int p1row, int p1col, int p2row, int p2col) {
+	double denominator = (p2col - p1col);
+	double numerator = (p2row - p1col);
+	
+	return (denominator / numerator);
+}
+
+
 __device__ double calcIntercept( int col, int row, slope) {
 	return col - (row * slope);
+}
+
+__device__ int min(int x, int y) {
+	if(x < y) 
+		return x;
+	
+	return y;
+}
+
+__device__ int max(int x, int y) {
+	if(x > y) 
+		return x;
+		
+	return y;
 }
