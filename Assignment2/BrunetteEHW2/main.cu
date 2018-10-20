@@ -194,6 +194,7 @@ int main(int argc, char * argv[] )
 	//free dementions array
 	freePointers(header, processedPicture, numRows);	
 	//double pointer processed file
+	printf("Done!\n");
 	return 0;
 }
 
