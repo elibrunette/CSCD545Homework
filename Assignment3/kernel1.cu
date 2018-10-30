@@ -44,9 +44,20 @@ __global__ void k1( float* g_dataA, float* g_dataB, int floatpitch, int width)
 			s_data[2][sharedMemIndex] = 0.1f * g_dataA[(i+1) * pitch +  j   ]; //S
 		}
 		__syncthread();
+		
 		//perform the calculations
+		s_data[3][sharedMemoryIndex] = 	s_data[0][sharedMemoryIndex - 1] +
+						s_data[0][sharedMemoryIndex    ] +
+						s_data[0][sharedMemoryIndex + 1] +
+						s_data[1][sharedMemoryIndex - 1] +
+						s_data[1][sharedMemoryIndex    ] +
+						s_data[1][sharedMemoryIndex + 1] +
+						s_data[2][sharedMemoryIndex - 1] +
+						s_data[2][sharedMemoryIndex    ] +
+						s_data[2][sharedMemoryIndex + 1];
+		//copy to shared memory		
 
-				
+		
 
 	}
 }
