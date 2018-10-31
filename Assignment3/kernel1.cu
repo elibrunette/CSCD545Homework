@@ -17,15 +17,19 @@ __global__ void k1( float* g_dataA, float* g_dataB, int floatpitch, int width)
 	i = i + 1;
 	j = j + 1;
 
-	int sharedWidth = width + 2;
+	int sharedWidth = blockDim.x + 2;
 	int sharedMemIndex = threadIdx.x + 1;
+
+//	int  boundary = floatpitch - width;\
+
+	//if( i >= width - 1|| j >= width - 1 || i < 1 || j < 1 ) return;
 
 	if(i < width - 1 && j < width - 1 && i >= 1 && j >= 1)
 	{
 	
 		//copy memory to shared memory
 		
-		if(j == 1) {
+		if(sharedMemIndex == 1) {
 			s_data[sharedWidth 		+ sharedMemIndex		] = g_dataA[ i    * floatpitch +  j   ]; //itself
 			s_data[				  sharedMemIndex	     - 1] = g_dataA[(i-1) * floatpitch + (j-1)]; //NW
 			s_data[				  sharedMemIndex		] = g_dataA[(i-1) * floatpitch +  j   ]; //N
@@ -33,7 +37,7 @@ __global__ void k1( float* g_dataA, float* g_dataB, int floatpitch, int width)
 			s_data[sharedWidth * 2 		+ sharedMemIndex 	     - 1] = g_dataA[(i+1) * floatpitch + (j-1)]; //SW
 			s_data[sharedWidth * 2 		+ sharedMemIndex		] = g_dataA[(i+1) * floatpitch +  j   ]; //S
 		}
-		else if(j == width - 2) {
+		else if(j == width - 2 || sharedMemIndex == blockDim.x) {
 			s_data[sharedWidth 		+ sharedMemIndex	 	] = g_dataA[ i    * floatpitch +  j   ]; //itself
 			s_data[				  sharedMemIndex		] = g_dataA[(i-1) * floatpitch +  j   ]; //N
 			s_data[				  sharedMemIndex 	     + 1] = g_dataA[(i-1) * floatpitch + (j+1)]; //NE

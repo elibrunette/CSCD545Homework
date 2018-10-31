@@ -22,7 +22,7 @@ __global__ void k0( float* g_dataA, float* g_dataB, int pitch, int width )
   j = j + 1; //because the edge of the data is not processed  
 
   // check the boundary
-  if( i >= width - 1|| j >= width - 1 || i < 1 || j < 1 ) return;
+  if( i >= width - 1|| j >= width - 2 || i < 1 || j < 1 ) return;
 
   g_dataB[i * pitch + j] = (
                               0.2f * g_dataA[i * pitch + j] +               //itself
