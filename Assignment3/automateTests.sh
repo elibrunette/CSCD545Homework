@@ -4,16 +4,13 @@ make
 #./jacobi threadsPerBlock passes width height [p]
 #serial solutions 
 
-./jacobi 0 1000 1600 1600
-./jacobi 0 1000 3200 3200
+cd ./k1
+make dbg="" cuda_dbg="" opt="-O3"
+./jacobi 512 1000 1600 1600 p > k21_output
 
-#gpu solution 1600 by 1600
-./jacobi 32 1000 1600 1600
-./jacobi 128 1000 1600 1600
-./jacobi 256 1000 1600 1600
-./jacobi 384 1000 1600 1600
-./jacobi 512 1000 1600 1600
+cd ../k0
+make dbg="" cuda_dbg="" opt="-O3"
+./jacobi 512 1000 1600 1600 p > k20_output
 
-#gpu solution 3200 by 3200
-./jacobi 1024 1000 1600 1600
-./jacobi 256 1000 3200 3200
+cd ..
+diff ./k0/k20_output ./k1/k21_output
