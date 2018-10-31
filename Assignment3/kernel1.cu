@@ -2,7 +2,7 @@
 #include "kernel1.h"
 
 
-extern  __shared__  float sdata[];
+//extern  __shared__  float sdata[];
 
 ////////////////////////////////////////////////////////////////////////////////
 //! Weighted Jacobi Iteration
@@ -12,55 +12,56 @@ extern  __shared__  float sdata[];
 __global__ void k1( float* g_dataA, float* g_dataB, int floatpitch, int width) 
 {
         extern __shared__ float s_data[];
-	unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
+	unsigned int j = blockIdx.x * blockDim.x + threadIdx.x;
+	unsigned int i = blockIdx.y * blockDim.y + threadIdx.y;
 	i = i + 1;
-	int sharedMaxIndex = blockDim.x + 1;
-	int sharedMemIndex = threadIdx.x;
-
-	int j = blockIdx.y;
 	j = j + 1;
+
+	int sharedWidth = width + 2;
+	int sharedMemIndex = threadIdx.x + 1;
+
+	if(i < width - 1 && j < width - 1 && i >= 1 && j >= 1)
+	{
 	
-    if(i < width - 1 || i > 1 || j < width - 1 || j > 1) {
 		//copy memory to shared memory
-		if(sharedMemIndex == 1) {
-			s_data[sharedMaxIndex 	  + 2] = 0.2f * g_dataA[ i    * floatpitch +  j   ]; //itself
-			s_data[			    0] = 0.1f * g_dataA[(i-1) * floatpitch + (j-1)]; //NW
-			s_data[			    1] = 0.1f * g_dataA[(i-1) * floatpitch +  j   ]; //N
-			s_data[sharedMaxIndex 	  + 1] = 0.1f * g_dataA[ i    * floatpitch + (j+1)]; //W
-			s_data[sharedMaxIndex * 2 + 1] = 0.1f * g_dataA[(i+1) * floatpitch + (j-1)]; //SW
-			s_data[sharedMaxIndex * 2 + 2] = 0.1f * g_dataA[(i+1) * floatpitch +  j   ]; //S
+		
+		if(j == 1) {
+			s_data[sharedWidth 		+ sharedMemIndex		] = g_dataA[ i    * floatpitch +  j   ]; //itself
+			s_data[				  sharedMemIndex	     - 1] = g_dataA[(i-1) * floatpitch + (j-1)]; //NW
+			s_data[				  sharedMemIndex		] = g_dataA[(i-1) * floatpitch +  j   ]; //N
+			s_data[sharedWidth  		+ sharedMemIndex 	     - 1] = g_dataA[ i    * floatpitch + (j-1)]; //W
+			s_data[sharedWidth * 2 		+ sharedMemIndex 	     - 1] = g_dataA[(i+1) * floatpitch + (j-1)]; //SW
+			s_data[sharedWidth * 2 		+ sharedMemIndex		] = g_dataA[(i+1) * floatpitch +  j   ]; //S
 		}
-		else if(sharedMemIndex == width - 2) {
-			s_data[2 * sharedMaxIndex - 2	 ] = 0.2f * g_dataA[ i    * floatpitch +  j   ]; //itself
-			s_data[sharedMaxIndex - 2	 ] = 0.1f * g_dataA[(i-1) * floatpitch +  j   ]; //N
-			s_data[sharedMaxIndex - 1	 ] = 0.1f * g_dataA[(i-1) * floatpitch + (j-1)]; //NE
-			s_data[2 * sharedMaxIndex - 1	 ] = 0.1f * g_dataA[ i    * floatpitch + (j+1)]; //E
-			s_data[3 * sharedMaxIndex - 1	 ] = 0.1f * g_dataA[(i+1) * floatpitch + (j+1)]; //SE
-			s_data[3 * sharedMaxIndex - 2	 ] = 0.1f * g_dataA[(i+1) * floatpitch +  j   ]; //S
+		else if(j == width - 2) {
+			s_data[sharedWidth 		+ sharedMemIndex	 	] = g_dataA[ i    * floatpitch +  j   ]; //itself
+			s_data[				  sharedMemIndex		] = g_dataA[(i-1) * floatpitch +  j   ]; //N
+			s_data[				  sharedMemIndex 	     + 1] = g_dataA[(i-1) * floatpitch + (j+1)]; //NE
+			s_data[sharedWidth 		+ sharedMemIndex 	     + 1] = g_dataA[ i    * floatpitch + (j+1)]; //E
+			s_data[sharedWidth * 2  	+ sharedMemIndex 	     + 1] = g_dataA[(i+1) * floatpitch + (j+1)]; //SE
+			s_data[sharedWidth * 2  	+ sharedMemIndex		] = g_dataA[(i+1) * floatpitch +  j   ]; //S
 		}
 		else {
-			s_data[2 * sharedMaxIndex + sharedMemIndex] = 0.1f * g_dataA[(i-1) * floatpitch +  j   ]; //N
-			s_data[2 * sharedMaxIndex + sharedMemIndex] = 0.2f * g_dataA[ i    * floatpitch +  j   ]; //itself
-			s_data[3 * sharedMaxIndex + sharedMemIndex] = 0.1f * g_dataA[(i+1) * floatpitch +  j   ]; //S
+			s_data[			 sharedMemIndex	] = g_dataA[(i-1) * floatpitch +  j   ]; //N
+			s_data[sharedWidth     + sharedMemIndex	] = g_dataA[ i    * floatpitch +  j   ]; //itself
+			s_data[sharedWidth * 2 + sharedMemIndex	] = g_dataA[(i+1) * floatpitch +  j   ]; //S
 		}
+
 		__syncthreads();
 		
 		//perform the calculations
-		s_data[4 * sharedMaxIndex + sharedMemIndex] =	s_data[				sharedMemIndex - 1] + //NW
-								s_data[				sharedMemIndex    ] + //N
-								s_data[				sharedMemIndex + 1] + //NE
-								s_data[sharedMaxIndex + 	sharedMemIndex - 1] + //W
-								s_data[sharedMaxIndex +		sharedMemIndex    ] + //itself
-								s_data[sharedMaxIndex + 	sharedMemIndex + 1] + //E
-								s_data[sharedMaxIndex * 2 + 	sharedMemIndex - 1] + //SW
-								s_data[sharedMaxIndex * 2 + 	sharedMemIndex    ] + //S
-								s_data[sharedMaxIndex * 2 + 	sharedMemIndex + 1];  //SE
-		//copy to shared memory		
-		int midRow = blockIdx.y + 1;
-		int col = blockDim.x * blockIdx.x;
-
-		g_dataB[midRow * width + col] = s_data[3];
-
+		g_dataB[i * floatpitch + j] = (	
+						.1f * s_data[			  sharedMemIndex		- 1] + //NW
+						.1f * s_data[			  sharedMemIndex		   ] + //N
+						.1f * s_data[			  sharedMemIndex		+ 1] + //NE
+						.1f * s_data[sharedWidth 	+ sharedMemIndex 		- 1] + //W
+						.2f * s_data[sharedWidth 	+ sharedMemIndex		   ] + //itself
+						.1f * s_data[sharedWidth 	+ sharedMemIndex 		+ 1] + //E
+						.1f * s_data[sharedWidth * 2 	+ sharedMemIndex 		- 1] + //SW
+						.1f * s_data[sharedWidth * 2 	+ sharedMemIndex		   ] + //S
+						.1f * s_data[sharedWidth * 2 	+ sharedMemIndex 		+ 1] //SE
+					      ) * .95f; 
 	}
+
 }
 
