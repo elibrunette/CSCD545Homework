@@ -1,0 +1,9 @@
+Num of blocks is 4
+The input array is:
+    0     0     0     0     0     1     1     1     1     1     1     0     1     1     0     1     0     0     0     1     1     1     0     0     1     0     0     1     0     0     0     0     1     0     0     1     1     1     1     0     0     0     0     0     1     0     1     1     1     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0 
+Timing simple GPU implementation… 
+ done! GPU time cost in second: 0.000038
+The output from device is:    2 
+Timing CPU implementation…
+ done. CPU time cost in second: 0.000001
+CPU finding sum number is 23.0
