@@ -91,7 +91,7 @@ __global__ void reduce3(float *in, float *out, int n, int sharedN)
 
     // load shared mem
     int i = blockIdx.x * sharedN + threadIdx.x;
-    int res = blockIdx.x * blockDim.x + threadIdx.x;
+    //int res = blockIdx.x * blockDim.x + threadIdx.x;
     int idx = threadIdx.x;
     int bdim = blockDim.x;
     int s = 0;
@@ -108,9 +108,9 @@ __global__ void reduce3(float *in, float *out, int n, int sharedN)
     __syncthreads();
 
     // do reduction in shared mem
-    for(s = bdim; s > 1; s = s/2) {
+    for(s = bdim; s >= 1; s = s/2) {
     	if(idx < s)
-	   sdata[idx] = sdata[idx] + sdata[idx + s];
+	   sdata[idx] += sdata[idx + s];
 	__syncthreads();
     }
 
