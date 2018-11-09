@@ -91,20 +91,31 @@ __global__ void reduce3(float *in, float *out, int n, int sharedN)
 
     // load shared mem
     int i = blockIdx.x * sharedN + threadIdx.x;
-    int res = blockDim.x * blockIdx.x + threadIdx.x;
+    int res = blockIdx.x * blockDim.x + threadIdx.x;
     int idx = threadIdx.x;
     int bdim = blockDim.x;
+    int s = 0;
 
-    if(i > n)
-	return;
+    //inital read into shared memory
+    if(i < n) {
+	sdata[idx] = in[i];
+    } else {
+	sdata[idx] = 0;
+    }
+    __syncthreads();
 
-    sdata[idx] = in[i];
     sdata[idx + bdim] = in[i + bdim];
-
     __syncthreads();
 
     // do reduction in shared mem
-    out[res] = sdata[idx] + sdata[idx + bdim];
+    for(s = bdim; s > 1; s = s/2) {
+    	if(idx < s)
+	   sdata[idx] = sdata[idx] + sdata[idx + s];
+	__syncthreads();
+    }
+
+    if(idx == 0)
+	out[blockIdx.x] = sdata[0];
 }
 
 // Check if an int is power of 2
@@ -123,7 +134,6 @@ void usage()
 }
 
 
-//
 void runCUDA( float *arr, int  n_old, int tile_width)
 {    
    // set up host memory
@@ -144,7 +154,7 @@ void runCUDA( float *arr, int  n_old, int tile_width)
    //Shared mem size 
    sharedSize = tile_width * sizeof(float) * 2;
    sharedN = tile_width * 2;
-   int num_block = ceil(n / (float)tile_width);
+   int num_block = ceil(n / (float) sharedN);
    printf("Num of blocks is %d\n", num_block);
    dim3 block(tile_width, 1, 1);
    dim3 grid(num_block, 1, 1);
@@ -168,7 +178,8 @@ void runCUDA( float *arr, int  n_old, int tile_width)
        printArray(h_in, n);
 
 
-   int num_in = n, num_out = ceil((float)n / tile_width);
+   int num_in = n, 
+   num_out = ceil((float)n / tile_width);
    float *temp;
   
    printf("Timing simple GPU implementation… \n");
