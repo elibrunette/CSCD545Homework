@@ -12,14 +12,12 @@
  */
 __device__ int gpu_strlen(char * s) 
 {
-	int i = 0;
-	int count = 0;
-	
-	while(s[i] != '\n' && s[i] != "\0") {
-		count ++;
-		i ++;
-	}
-	return count;
+    int i = 0;
+    while(s[i] != '\0')
+    {
+	i++;
+    }
+    return i;
 }
 
 /*
@@ -44,23 +42,49 @@ __device__ int gpu_isAlpha(char ch)
  */
 __global__ void wordCount( char **a, int **out, int numLine, int maxLineLen )
 {
+	
+    	int ix   = blockIdx.x*blockDim.x + threadIdx.x;
+    	int iy   = blockIdx.y*blockDim.y + threadIdx.y;
+    	int currLen = gpu_strlen(a[iy]);
+        
+	
+    	//each thread process one character within a line 
+    	if( iy < numLine && ix < currLen && gpu_isAlpha(a[iy][ix]) != 1 )
+    	{
+        	out[iy][ix] += 1;
+	}
+	__syncthreads();
+
+	if(out[iy][ix] == 1 && ix < currLen)
+		out[iy][ix + 1] = 0;
+
+	/*
 	int col = blockIdx.x * blockDim.x + threadIdx.x;
 	int row = blockIdx.y * blockDim.y + threadIdx.y;
 	
 	if( row < maxLineLen || col < numLine)
 		return;
 		
+	
+	out[iy][ix] = 1;
+	
+	
 	int rowLen = gpu_strlen(a[row]);
 	
 	if(col < rowLen)
 		return;
+
+	if(gpu_isAlpha(a[row][col]) == 1) {
+		out[row][col] = 1;
+	} else {
+		out[row][col] = 1;
+	}
+	__syncthreads();
 	
-	if(gpu_isAlpha(a[row][col])) {
+	if(col != 1 && out[row][col - 1] == 1) {
 		out[row][col] = 0;
 	}
-	__syncthread();
-	
-	if(out[row][col - 1])
+	*/
 		
 }  
 
@@ -95,7 +119,8 @@ int main()
     {
         cudaMalloc((void **) &h_out[i],C * sizeof(char));
         h_in[i]=(char *)calloc(C, sizeof(char));//allocate or connect the input data to it
-        strcpy(h_in[i], "good morning and I'm a good student!");
+//!!!!!!!!!!!!!!!!!
+        strcpy(h_in[i], "for you:: he ");
         cudaMemcpy(h_out[i], h_in[i], strlen(h_in[i]) + 1, cudaMemcpyHostToDevice);
     }
     cudaMemcpy(d_in, h_out, sizeof(char *) * R,cudaMemcpyHostToDevice);
