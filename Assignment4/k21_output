@@ -1,0 +1,8 @@
+Num of blocks is 512
+The input array is:
+Timing simple GPU implementation… 
+ done! GPU time cost in second: 0.000127
+The output from device is:524232 
+Timing CPU implementation…
+ done. CPU time cost in second: 0.002716
+CPU finding sum number is 524232.0
