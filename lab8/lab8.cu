@@ -25,6 +25,25 @@ __device__ int gpu_isAlpha(char ch)
 
 __global__ void wordCount2( char **a, int **out, int numLine, int maxLineLen )
 {
+        int ix   = blockIdx.x*blockDim.x + threadIdx.x;
+	int iy = blockIdx.y * blockDim.y + threadIdx.y;
+    	int currLen = gpu_strlen(a[iy]);
+        __shared__ char s_data[C];
+
+	if(ix >= gpu_strlen(a[0]) && iy >= numLine) {
+		return;
+	}
+	
+	s_data[ix] = a[iy][ix];
+    	//each thread process one character within a line 
+    	if( ix < currLen && gpu_isAlpha(s_data[ix]) != 1 )
+    	{
+        	out[iy][ix] += 1;
+		}
+	__syncthreads();
+
+	if(out[iy][ix] == 1 && ix < currLen)
+		out[iy][ix + 1] = 0;
 }
 
 void checkErr()
@@ -91,7 +110,8 @@ int main()
     block.y = 1;
     grid.x  = ceil((float)C / block.x);
     grid.y  = ceil((float)R / block.y); //careful must be type cast into float, otherwise, integer division used
-    //printf("grid.x = %d, grid.y=%d\n", grid.x, grid.y );
+    printf("grid.x = %d, grid.y=%d\n", grid.x, grid.y );
+    //printf("block.x = %d, block.y=%d\n", block.x, block.y );
 
     //launch kernel
     wordCount2<<<grid, block>>>( d_in, d_count_in, R, C);
