@@ -34,7 +34,30 @@ __global__ void matrix_multiply_improved(float *a, float *b, float *ab, size_t w
     // You are required to use shared memory to do tiled matrix-matrix multiplication
     // width is the size of the square matrix along one dimension.
 
+	extern __shared__ float s_data[];
 
+	float * Mds = (float *) s_data;
+	float * Nds = (float *) &Mds[width * width];
+	
+	int bx = blockIdx.x; int by = blockIdx.y;
+	int tx = threadIdx.x; int ty = threadIdx.y;
+	
+	int row = by * blockDim.x + ty;
+	int col = bx * blockDim.x + tx;
+	
+	float Pvalue = 0;
+	
+	for(int m = 0; m < width/blockDim.x; ++m) {
+		Mds[ty*width + tx] = a[row * width + m*blockDim.x + tx];
+		Nds[ty*width + tx] = b[(m * blockDim.x + ty) * width + col];
+		__syncthreads();
+		
+		for(int k = 0; k < blockDim.x; ++k) {
+			Pvalue += Mds[ty*width + k] * Nds[k*width + tx];
+		}
+		__syncthreads();
+	}
+	ab[row * width + col] = Pvalue;
 }
 
 
@@ -136,6 +159,49 @@ int main(int argc, char *argv[])
   average_simple_time /= num_launches;
   printf(" done! GPU time cost in second: %f\n", average_simple_time / 1000);
 
+
+
+  // now for the second GPU solution
+  
+  // time the kernel launches using CUDA events
+  cudaEventCreate(&launch_begin);
+  cudaEventCreate(&launch_end);
+
+  int sharedSize = 2 * n * n * sizeof(float);
+
+  // to get accurate timings, launch a single "warm-up" kernel
+  matrix_multiply_simple<<<num_blocks,block_size, sharedSize>>>(d_a, d_b, d_c, n);
+  cudaMemcpy(h_c, d_c, sizeof(float) * n * n, cudaMemcpyDeviceToHost);
+
+  writeArray(h_c, n, n, "gpuout3");
+  if(shouldPrint)
+      printArray(h_c, n, n); 
+
+  // time many kernel launches and take the average time
+  printf("Timing simple GPU implementation… \n");
+  for(int i = 0; i < num_launches; ++i)
+  {
+    // record a CUDA event immediately before and after the kernel launch
+    cudaEventRecord(launch_begin,0);
+    matrix_multiply_simple<<<num_blocks,block_size, sharedSize>>>(d_a, d_b, d_c, n);
+    
+    cudaEventRecord(launch_end,0);
+    cudaEventSynchronize(launch_end);
+
+    // measure the time spent in the kernel
+    float time = 0;
+    cudaEventElapsedTime(&time, launch_begin, launch_end);
+
+    average_simple_time += time;
+  }
+  average_simple_time /= num_launches;
+  printf(" done! GPU time cost in second: %f\n", average_simple_time / 1000);
+
+
+
+
+
+/*
   // now time the sequential code on CPU
   // again, launch a single "warm-up" function call
   mul(h_c, h_a, h_b, n);
@@ -162,7 +228,7 @@ int main(int argc, char *argv[])
   }
   average_cpu_time /= num_cpu_test;
   printf(" done. CPU time cost in second: %f\n", average_cpu_time);
-  
+ 
   writeArray(h_c, n, n, "cpuout2");
   if (shouldPrint)
       printArray(h_c, n, n);
@@ -182,7 +248,7 @@ int main(int argc, char *argv[])
   printf("Throughput of cpu code: %.2f GFLOPS\n", cpu_throughput);
   printf("Performance improvement: simple_throughput / cpu_throughput = %.2f x\n", simple_throughput / cpu_throughput );
   printf("Speedup in terms of time cost: %.2f x\n", speedup);
-
+*/
   // destroy the CUDA events
   cudaEventDestroy(launch_begin);
   cudaEventDestroy(launch_end);
