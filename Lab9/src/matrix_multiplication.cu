@@ -36,9 +36,8 @@ __global__ void matrix_multiply_improved(float *a, float *b, float *ab, size_t w
 
 	extern __shared__ float s_data[];
 
-	float * Mds = (float *) s_data;
-	float * Nds = (float *) &Mds[width * width];
-	
+	int tile_width = blockDim.x;
+	int n = blockDim.x * blockDim.x;	
 	int bx = blockIdx.x; int by = blockIdx.y;
 	int tx = threadIdx.x; int ty = threadIdx.y;
 	
@@ -46,14 +45,15 @@ __global__ void matrix_multiply_improved(float *a, float *b, float *ab, size_t w
 	int col = bx * blockDim.x + tx;
 	
 	float Pvalue = 0;
-	
-	for(int m = 0; m < width/blockDim.x; ++m) {
-		Mds[ty*width + tx] = a[row * width + m*blockDim.x + tx];
-		Nds[ty*width + tx] = b[(m * blockDim.x + ty) * width + col];
+	int m = 0;
+
+	for(m = 0; m < width/blockDim.x; ++m) {
+		s_data[ty*tile_width + tx] = a[row * width + m*tile_width + tx];
+		s_data[ty*tile_width + tx + n] = b[(m * tile_width + ty) * width + col];
 		__syncthreads();
 		
-		for(int k = 0; k < blockDim.x; ++k) {
-			Pvalue += Mds[ty*width + k] * Nds[k*width + tx];
+		for(int k = 0; k < tile_width; ++k) {
+			Pvalue += s_data[ty*tile_width + k] * s_data[n + k*tile_width + tx];
 		}
 		__syncthreads();
 	}
@@ -115,10 +115,11 @@ int main(int argc, char *argv[])
   const dim3 num_blocks(ceil(n / (float)block_size.x), ceil(n / (float)block_size.y));
 
   // allocate storage for the device
-  float *d_a = 0, *d_b = 0, *d_c = 0;
+  float *d_a = 0, *d_b = 0, *d_c = 0, *d_c2 = 0;
   cudaMalloc((void**)&d_a, sizeof(float) * n * n);
   cudaMalloc((void**)&d_b, sizeof(float) * n * n);
   cudaMalloc((void**)&d_c, sizeof(float) * n * n);
+  cudaMalloc((void**)&d_c2, sizeof(float) * n * n);
 
   // copy input to the device
   cudaMemcpy(d_a, h_a, sizeof(float) * n * n, cudaMemcpyHostToDevice);
@@ -167,11 +168,11 @@ int main(int argc, char *argv[])
   cudaEventCreate(&launch_begin);
   cudaEventCreate(&launch_end);
 
-  int sharedSize = 2 * n * n * sizeof(float);
-
+  int sharedSize = 2 * tile_width * tile_width * sizeof(float);
+  float average_improved_time= 0;
   // to get accurate timings, launch a single "warm-up" kernel
-  matrix_multiply_simple<<<num_blocks,block_size, sharedSize>>>(d_a, d_b, d_c, n);
-  cudaMemcpy(h_c, d_c, sizeof(float) * n * n, cudaMemcpyDeviceToHost);
+  matrix_multiply_simple<<<num_blocks,block_size, sharedSize>>>(d_a, d_b, d_c2, n);
+  cudaMemcpy(h_c, d_c2, sizeof(float) * n * n, cudaMemcpyDeviceToHost);
 
   writeArray(h_c, n, n, "gpuout3");
   if(shouldPrint)
@@ -183,7 +184,7 @@ int main(int argc, char *argv[])
   {
     // record a CUDA event immediately before and after the kernel launch
     cudaEventRecord(launch_begin,0);
-    matrix_multiply_simple<<<num_blocks,block_size, sharedSize>>>(d_a, d_b, d_c, n);
+    matrix_multiply_improved<<<num_blocks,block_size, sharedSize>>>(d_a, d_b, d_c2, n);
     
     cudaEventRecord(launch_end,0);
     cudaEventSynchronize(launch_end);
@@ -192,13 +193,11 @@ int main(int argc, char *argv[])
     float time = 0;
     cudaEventElapsedTime(&time, launch_begin, launch_end);
 
-    average_simple_time += time;
+    average_improved_time += time;
   }
-  average_simple_time /= num_launches;
-  printf(" done! GPU time cost in second: %f\n", average_simple_time / 1000);
-
-
-
+  average_improved_time /= num_launches;
+  printf(" done! GPU time cost in second: %f\n", average_improved_time / 1000);
+  printf("Time cost improvement: %f\n", average_simple_time / average_improved_time);
 
 
 /*
@@ -257,6 +256,7 @@ int main(int argc, char *argv[])
   cudaFree(d_a);
   cudaFree(d_b);
   cudaFree(d_c);
+  cudaFree(d_c2);
   
   free(h_a);
   free(h_b);
