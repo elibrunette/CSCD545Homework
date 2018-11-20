@@ -197,6 +197,7 @@ int main(int argc, char *argv[])
   }
   average_improved_time /= num_launches;
   printf(" done! GPU time cost in second: %f\n", average_improved_time / 1000);
+  printf("Time cost improvement: %f\n", average_simple_time / average_improved_time);
 
 
 /*
