@@ -1,7 +1,7 @@
 knn: gpuKNN.o knn.o FileUtils.o
 	nvcc -arch=sm_30 -o knn gpuKNN.o knn.o FileUtils.o -I.
 
-gpuKNN.o: gpuKNN.cu gpuKNN.h
+gpuKNN.o: gpuKNN.cu
 	nvcc -arch=sm_30 -c gpuKNN.cu
 
 knn.o: knn.c knn.h
