@@ -36,9 +36,9 @@ void freeIntDoublePointer(int ** input, int rows) {
 	int i = 0;
 	for(i = 0; i < rows; i++) {
 		free(input[i]);
-		printf("Freed something\n");
+		//printf("Freed something\n");
 	}
-	printf("Made it through for loop\n\n\n\n\n");
+	//printf("Made it through for loop\n\n\n\n\n");
 	free(input);
 }
 
