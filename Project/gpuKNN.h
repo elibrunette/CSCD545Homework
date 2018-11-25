@@ -1,4 +1,2 @@
 
-__host__ void gpuKNN();
-
-__global__ void KNN(int * inx, int * iny, int nx, int ny, double * out);
+double *  gpuKNN(int ** classified, int ** test, int classCol, int classRow, int testCol, int testRow);

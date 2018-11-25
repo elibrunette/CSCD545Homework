@@ -7,6 +7,3 @@
 
 int main(int argc, char * argv);
 void usage();
-void freeIntDoublePointer(int ** input, int rows);
-void print2DArray(int ** arr, int col, int row);
-void printSingleArray(double * arr, int n);
