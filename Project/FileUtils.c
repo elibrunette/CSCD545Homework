@@ -67,3 +67,27 @@ int ** readFile(FILE * fin, int col, int row) {
 	//printf("finished initializing the array\n\n\n");
 	return toReturn;
 }
+
+void outputToFile(char * fileName, double ** arr, int row, int col) {
+	FILE * fout = fopen(fileName, "w");
+	int x = 0; 
+	int y = 0;
+
+	//account for edge cases:
+		//turnary operator for end of row case and end case 
+	for(x = 0; x < row; x++) {
+		for(y = 0; y < col; y++) {
+			fprintf(fout, "%f ", arr[x][y]);
+		}
+		fprintf(fout, "\n");
+	}
+
+
+}
+
+
+
+
+
+
+
