@@ -8,6 +8,7 @@
 
 void usage() {
 	printf("Usage: ./knn numberOfNeighbors inputClassificationsFile inputTestFile outputClassificationsFile\n");
+	exit(-1);
 }
 
 int main(int argc, char * argv[]) {
