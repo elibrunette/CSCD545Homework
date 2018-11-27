@@ -36,9 +36,11 @@ double *  gpuKNN(int ** classified, int ** test, int classCol, int classRow, int
 	dim3 grid, block;
 	block.x = 16;
 	block.y = 1;
-	grid.x = ceil((float) testRow / block.x);
+	grid.x = ceil(((float) testRow * classRow) / block.x);
 	grid.y = 1;
 
+	printf("Made it to right before the kernel\n");
+	printf("ClassRow: %d\n TestRow: %d\n\n\n", classRow, testRow);
 	//call kernel
 	gpuKNNSolution<<<grid, block>>>(d_classified, d_test, d_result, classCol, classRow, testCol, testRow);
 
@@ -59,15 +61,24 @@ __global__ void gpuKNNSolution(int * d_classified, int * d_test, double * d_resu
 	int x = 0;
 	int y = 0;
 	int i = blockIdx.x * blockDim.x + threadIdx.x;
+	int testCase = i / classRow;
+	double runningTotal = 0;
+	double difference = 0;
 
-	if(i >= testRow)
+	if(i >= testRow * classRow)
 		return;
+
+	//d_result[i] = testCase;
 
 	for(x = 0; x < classRow; x++) {
 		for(y = 0; y < classCol; y++) {
-			d_result[i] = 1;
+			
+			difference = d_classified[testCase * classCol + y] - d_test[testCase * testCol + y];
+			runningTotal = (difference) * (difference);
 		}
+		d_result[i] = sqrt(runningTotal);
 	}
+
 }
 
 
