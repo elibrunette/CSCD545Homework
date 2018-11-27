@@ -3,11 +3,13 @@
 #include <stdlib.h>
 
 #include "gpuKNN.h"
+#include "cpuKNN.h"
 #include "FileUtils.h"
 #include "ArrayUtils.h"
 
 void usage() {
 	printf("Usage: ./knn numberOfNeighbors inputClassificationsFile inputTestFile outputClassificationsFile\n");
+	exit(-1);
 }
 
 int main(int argc, char * argv[]) {
@@ -32,13 +34,16 @@ int main(int argc, char * argv[]) {
 	int * testPointsHeader = getHeader(test);
 
 	//variables for step two
-	double * distanceArray;
-	
+	double ** cpuDistanceArray;
+	double * gpuDistanceArray;
+
 	//Step one: read in file for orginal values
 	classifiedPoints = readFile(initialFin, classifiedPointsHeader[0], classifiedPointsHeader[1]);
 	testPoints = readFile(test, testPointsHeader[0], testPointsHeader[1]);
 
 	//step 2a: create a cpuSolution
+	cpuDistanceArray = cpuKNNSolution(classifiedPoints, testPoints, classifiedPointsHeader[0], classifiedPointsHeader[1], testPointsHeader[0], testPointsHeader[1]);
+	print2DDoubleArray(cpuDistanceArray, classifiedPointsHeader[1], testPointsHeader[1]);
 
 	//step 2b: create a gpuSolution
 	distanceArray = gpuKNN(classifiedPoints, testPoints, classifiedPointsHeader[0], classifiedPointsHeader[1], testPointsHeader[0], testPointsHeader[1]);

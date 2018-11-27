@@ -1,8 +1,11 @@
-knn: gpuKNN.o knn.o FileUtils.o ArrayUtils.o
-	nvcc -arch=sm_30 -o knn gpuKNN.o knn.o FileUtils.o ArrayUtils.o -I.
+knn: gpuKNN.o knn.o FileUtils.o ArrayUtils.o cpuKNN.o
+	nvcc -arch=sm_30 -o knn gpuKNN.o knn.o FileUtils.o ArrayUtils.o cpuKNN.o -I.
 
 gpuKNN.o: gpuKNN.cu
 	nvcc -arch=sm_30 -c gpuKNN.cu
+
+cpuKNN.o: cpuKNN.c cpuKNN.h
+	g++ -c -x c++ cpuKNN.c -I.
 
 knn.o: knn.c knn.h
 	g++ -c -x c++ knn.c -I. 

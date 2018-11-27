@@ -8,4 +8,8 @@ void freeIntDoublePointer(int ** input, int rows);
 
 int * twoDToOneD(int ** arr, int col, int row);
 
+double ** createDouble2DArray(int col, int row);
+
+int ** createInt2DArray(int col, int row);
+
 double ** oneDToTwoD(double * arr, int col, int row);
