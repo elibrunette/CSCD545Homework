@@ -68,7 +68,7 @@ int ** readFile(FILE * fin, int col, int row) {
 	return toReturn;
 }
 
-void outputToFile(char * fileName, double ** arr, int row, int col) {
+void outputToFile(const char * fileName, double ** arr, int row, int col) {
 	FILE * fout = fopen(fileName, "w");
 	int x = 0; 
 	int y = 0;
@@ -81,13 +81,17 @@ void outputToFile(char * fileName, double ** arr, int row, int col) {
 		}
 		fprintf(fout, "\n");
 	}
-
-
+	fclose(fout);
 }
 
-
-
-
-
-
-
+void outputFinal(const char * fileName, int ** testPoints, int * classifiedPoints, int testCol, int testRow) {
+	FILE * fout = fopen(fileName, "w");
+	int x = 0; 
+	int y = 0; 
+	for(x = 0; x < testRow; x++) {
+		for(y = 0; y < testCol; y++) {
+			fprintf(fout, "%d ", testPoints[x][y]);
+		}
+		fprintf(fout, "%d\n", classifiedPoints[x]);
+	}
+}

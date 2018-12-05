@@ -2,11 +2,20 @@
 #include <string.h>
 #include <stdlib.h>
 
+void printSingleIntArray(int * arr, int n) {
+	int x = 0;
+	printf("[");
+	for(x = 0; x < n; x++) {
+		(x ==(n - 1)) ? printf("%d\n", arr[x]) : printf("%d ", arr[x]);
+	}
+	printf("]\n");
+}
+
 void printSingleArray(double * arr, int n) {
 	int x = 0;
 	printf("["); 
 	for( x = 0; x < n; x++) {
-		(x == (n - 1)) ? printf("%f", arr[x]) : printf("%f ", arr[x]);
+		(x == (n - 1)) ? printf("%f\n", arr[x]) : printf("%f ", arr[x]);
 	}
 	printf("]/n");
 }
@@ -64,25 +73,42 @@ int * twoDToOneD(int ** arr, int col, int row) {
 	return toReturn;
 }
 
+double ** createDouble2DArray(int col, int row) {
+	int x = 0;
+
+	double ** toReturn = (double **) calloc(row + 1, sizeof(double *));
+	
+	for(x = 0; x < row; x++) {
+		toReturn[x] = (double *) calloc(col + 1, sizeof(double));
+	}
+	return toReturn;
+}
+
+int ** createInt2DArray(int col, int row) {
+	int x = 0; 
+
+	int ** toReturn = (int **) calloc(row + 1, sizeof(double));
+
+	for(x = 0; x < row; x++) {
+		toReturn[x] = (int *) calloc(col + 1, sizeof(int));
+	}
+	return toReturn;
+}
+
 double ** oneDToTwoD(double * arr, int col, int row) {
 	int x = 0;
 	int y = 0;
 	int i = 0; 
 	int n = col * row;
 	//intialize 2D arr
-	double ** toReturn = (double **) calloc(row + 1, sizeof(double *));
-	
-	for(x = 0; x < row; x++) {
-		toReturn[x] = (double *) calloc(col + 1, sizeof(double));
-	}
+	double ** toReturn = createDouble2DArray(col, row);
 
 	for(x = 0; x < row; x++) {
 		for(y = 0; y < col; y++) {
 			toReturn[x][y] = arr[i++];
 		}
 	}
-
+	free(arr); 
 	return toReturn;
 }
-
 
