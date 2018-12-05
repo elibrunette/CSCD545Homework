@@ -60,8 +60,8 @@ int main(int argc, char * argv[]) {
 	//step 2b: create a gpuSolution
 	gpuIndexes = gpuKNN(classifiedPoints, testPoints, classifiedPointsHeader[0], classifiedPointsHeader[1], testPointsHeader[0], testPointsHeader[1]);
 //uncomment out this when you get the sorted GPU stuff going
-	//gpuClassified = getClassifications(gpuIndexes, classifiedPoints, classRow, classCol, testRow, neighbors);
-	//outputFinal(gpuOutput, classifiedPoints, gpuClassified, testCol, testRow);
+	gpuClassified = getClassifications(gpuIndexes, classifiedPoints, classRow, classCol, testRow, neighbors);
+	outputFinal(gpuOutput, classifiedPoints, gpuClassified, testCol, testRow);
 
 	//step six: free up memory
 	freeIntDoublePointer(classifiedPoints, classifiedPointsHeader[1]);
