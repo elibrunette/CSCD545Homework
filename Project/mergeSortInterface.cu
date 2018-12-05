@@ -51,6 +51,7 @@ void fillValues(int * arr, int N) {
 int ** mergeSortForKNN(double ** arr, int classCol, int classRow, int testCol, int testRow) {
 
 	//print2DDoubleArray(arr, classRow, testRow);
+	//printf("Incoming perameters classCol: %d\nclassRow: %d\ntestCol: %d\ntestRow:%d\n", classCol, classRow, testCol, testRow);
 	int ** toReturn = createInt2DArray(classRow, testRow);
 
 	//setting up variables for sorting 
@@ -59,14 +60,11 @@ int ** mergeSortForKNN(double ** arr, int classCol, int classRow, int testCol, i
 	if(N < SHARED_SIZE_LIMIT)
 		N = SHARED_SIZE_LIMIT;
 
-	int *h_SrcVal = (int *) malloc(N * sizeof(int));
-	fillValues(h_SrcVal, N);
 
-	fillValues(h_SrcVal, N);
 	//printSingleIntArray(h_SrcVal, N);
 
 	int *d_SrcVal, *d_BufVal, *d_DstVal;
-	double * d_SrcKey, * d_BufKey, * d_DstKey, * h_dist_temp;
+	double * d_SrcKey, * d_BufKey, * d_DstKey;
 	
 	//allocating memory on GPU 
 	cudaMalloc((void **)&d_SrcKey, N * sizeof(double));
@@ -82,10 +80,18 @@ int ** mergeSortForKNN(double ** arr, int classCol, int classRow, int testCol, i
 	int i = 0;
 	int j = 0;
 
-	h_dist_temp = (double *) malloc(N * sizeof(double));
-	double * h_dist_row = (double *) malloc(N * sizeof(double));
 
+	//printf("Made up to the double for loop for sorting the array\n");
 	for(i = 0; i < testRow; i++) { 		//iterates through the arr array and creates a temp array that gets padded
+		
+		int *h_SrcVal = (int *) malloc(N * sizeof(int));
+		fillValues(h_SrcVal, N);
+		//printf("Filled Values\n");
+		double * h_dist_temp = (double *) malloc(N * sizeof(double));
+		double * h_dist_row = (double *) malloc(N * sizeof(double));
+
+
+		//printf("i: %d\n", i);
 		for(j = 0; j < N; j++) {
 			if(j < classRow) {
 				//printf("arr[i][j]: %f\n" , arr[i][j]);
@@ -104,17 +110,25 @@ int ** mergeSortForKNN(double ** arr, int classCol, int classRow, int testCol, i
 		//printf("Value for N: %d\n", N);
 
         		mergeSort(d_DstKey, d_DstVal, d_BufKey, d_BufVal, d_SrcKey, d_SrcVal, N, 1);
-
+		//printf("Right after the mergeSort\n");
+		
 		cudaMemcpy(h_dist_row, d_DstKey, testRow * classRow * sizeof(double), cudaMemcpyDeviceToHost);
-		cudaMemcpy(toReturn[i], d_DstVal, testRow * classRow * sizeof(int), cudaMemcpyDeviceToHost);
+		cudaMemcpy(h_SrcVal, d_DstVal, testRow * classRow * sizeof(int), cudaMemcpyDeviceToHost);
 
+		//printf("copying back to the result arr\n");
 		//copy computed values back to original array		
 		int x = 0;
 		for(x = 0; x < classRow; x++) {
 			arr[i][x] = h_dist_row[x];
+			toReturn[i][x] = h_SrcVal[x];
 		}
+		free(h_dist_temp);
+		free(h_dist_row);
+		free(h_SrcVal);
+		//printf("made it through one of the iterations of outer for loop\n\n");
 	}
 
+	//printf("made it to right after the for loop\n");
 	closeMergeSort();
 	
    	cudaFree(d_SrcKey);
@@ -124,11 +138,9 @@ int ** mergeSortForKNN(double ** arr, int classCol, int classRow, int testCol, i
    	cudaFree(d_SrcVal);
    	cudaFree(d_BufVal);
 
-	free(h_dist_temp);
-	free(h_SrcVal);
-
+	//printf("Made it out of merge and right before the print arr command");
 	print2DDoubleArray(arr, classRow, testRow);
-	print2DArray(toReturn, classRow, testRow);
+	//print2DArray(toReturn, classRow, testRow);
 	return toReturn;
 }
 
