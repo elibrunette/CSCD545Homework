@@ -30,11 +30,11 @@ double *  gpuKNN(int ** classified, int ** test, int classCol, int classRow, int
 
 	//copy memory
 	cudaMemcpy(d_classified, h_classified, classifiedN * sizeof(int), cudaMemcpyHostToDevice);
-	cudaMemcpy(d_test, h_test, testN * sizeof(double), cudaMemcpyHostToDevice);
+	cudaMemcpy(d_test, h_test, testN * sizeof(int), cudaMemcpyHostToDevice);
 
 	//set up the block and grid dementions 
 	dim3 grid, block;
-	block.x = 16;
+	block.x = 512;
 	block.y = 1;
 	grid.x = ceil(((float) testRow * classRow) / block.x);
 	grid.y = 1;
@@ -54,6 +54,9 @@ double *  gpuKNN(int ** classified, int ** test, int classCol, int classRow, int
 	cudaFree(d_test);
 	cudaFree(d_result);
 
+	//copy cpu from here using toReturn as the unsorted Distance array
+	
+
 	return toReturn;
 }
 
@@ -61,23 +64,22 @@ __global__ void gpuKNNSolution(int * d_classified, int * d_test, double * d_resu
 	int x = 0;
 	int y = 0;
 	int i = blockIdx.x * blockDim.x + threadIdx.x;
-	int testCase = i / classRow;
+	int row = i / classRow;
+	int col = i % classRow;
 	double runningTotal = 0;
 	double difference = 0;
 
 	if(i >= testRow * classRow)
 		return;
 
-	//d_result[i] = testCase;
+	//d_result[i] = (double) d_test[i];
 
-	for(x = 0; x < classRow; x++) {
-		for(y = 0; y < classCol; y++) {
-			
-			difference = d_classified[testCase * classCol + y] - d_test[testCase * testCol + y];
-			runningTotal = (difference) * (difference);
-		}
-		d_result[i] = sqrt(runningTotal);
+	
+	for(y = 0; y < testCol; y++) {
+		difference = (double) d_classified[col * classCol + y] - (double) d_test[row * testCol + y];
+		runningTotal = runningTotal + (difference) * (difference);
 	}
+	d_result[i] = sqrt(runningTotal);
 
 }
 

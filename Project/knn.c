@@ -9,21 +9,21 @@
 #include "./MergeSort/mergeSort_common.h"
 
 void usage() {
-	printf("Usage: ./knn numberOfNeighbors inputClassificationsFile inputTestFile outputClassificationsFile\n");
+	printf("Usage: ./knn numberOfNeighbors inputClassificationsFile inputTestFile  cpuOutputClassificationsFile gpuOutputClassificationsFile\n");
 	exit(-1);
 }
 
 int main(int argc, char * argv[]) {
 	//step zero: check the input from the user and store input from the user
-	if(argc != 5)
+	if(argc != 6)
 		usage();
 
 	//initalize variables
 	char * initialSetup = argv[2];
 	char * testCases = argv[3];
-	char * outputFile = argv[4];
+	char * cpuOutput = argv[4];
+	char * gpuOutput = argv[5];
 	int neighbors = atoi(argv[1]);
-	const char * cpuOutput = "cpuIntermediateResult";
 	//printf("initialSetup: %s\n\n\n", argv[2]);
 
 	//variables for step one
@@ -49,23 +49,16 @@ int main(int argc, char * argv[]) {
 	testPoints = readFile(test, testCol, testRow);
 
 	//step 2a: create a cpuSolution
-	cpuIndexes = cpuKNNSolution(classifiedPoints, testPoints, classCol, classRow, testCol, testRow);
+	//cpuIndexes = cpuKNNSolution(classifiedPoints, testPoints, classCol, classRow, testCol, testRow);
 	//print2DDoubleArray(cpuDistanceArray, classifiedPointsHeader[1], testPointsHeader[1]);
 	//outputToFile(cpuOutput, cpuDistanceArray, testPointsHeader[1], classifiedPointsHeader[1]);
-	cpuClassified = getClassifications(cpuIndexes, classifiedPoints, classRow, classCol, testRow, neighbors);
-	outputFinal("cpuOutput", classifiedPoints, cpuClassified, testCol, testRow);
+	//cpuClassified = getClassifications(cpuIndexes, classifiedPoints, classRow, classCol, testRow, neighbors);
+	//outputFinal(cpuOutput, classifiedPoints, cpuClassified, testCol, testRow);
 
 	//step 2b: create a gpuSolution
-	//gpuDistanceArray = gpuKNN(classifiedPoints, testPoints, classifiedPointsHeader[0], classifiedPointsHeader[1], testPointsHeader[0], testPointsHeader[1]);
-	//double ** distance = oneDToTwoD(gpuDistanceArray, classifiedPointsHeader[1], testPointsHeader[1]);
-	//print2DDoubleArray(distance, classifiedPointsHeader[1], testPointsHeader[1]);
-
-	//step three: sort the array
-
-	//step four: count the lowest n neighbors
-
-	//step five: output to file
-	
+	gpuDistanceArray = gpuKNN(classifiedPoints, testPoints, classifiedPointsHeader[0], classifiedPointsHeader[1], testPointsHeader[0], testPointsHeader[1]);
+	double ** distance = oneDToTwoD(gpuDistanceArray, classifiedPointsHeader[1], testPointsHeader[1]);
+	print2DDoubleArray(distance, classifiedPointsHeader[1], testPointsHeader[1]);
 
 	//step six: free up memory
 	freeIntDoublePointer(classifiedPoints, classifiedPointsHeader[1]);
