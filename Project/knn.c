@@ -6,6 +6,7 @@
 #include "cpuKNN.h"
 #include "FileUtils.h"
 #include "ArrayUtils.h"
+#include "./Timing/timing.h"
 #include "./MergeSort/mergeSort_common.h"
 
 void usage() {
@@ -46,22 +47,34 @@ int main(int argc, char * argv[]) {
 	int * cpuClassified;
 	int * gpuClassified;
 
+	//variables for calculating the time
+	double now, then;
+	double cpuTime, gpuTime;
+
 	//Step one: read in file for orginal values
 	classifiedPoints = readFile(initialFin, classCol, classRow);
 	testPoints = readFile(test, testCol, testRow);
 
 	//step 2a: create a cpuSolution
+	//warm up kernel
+	cpuKNNSolution(classifiedPoints, testPoints, classCol, classRow, testCol, testRow);
+
+	then = currentTime();
 	cpuIndexes = cpuKNNSolution(classifiedPoints, testPoints, classCol, classRow, testCol, testRow);
-	print2DArray(cpuIndexes, classifiedPointsHeader[1], testPointsHeader[1]);
-	//outputToFile("cpuIndexes", cpuIndexes, testPointsHeader[1], classifiedPointsHeader[1]);
 	cpuClassified = getClassifications(cpuIndexes, classifiedPoints, classRow, classCol, testRow, neighbors);
-	outputFinal(cpuOutput, classifiedPoints, cpuClassified, testCol, testRow);
+	now = currentTime();
+	cpuTime = now - then;
+	outputFinal(cpuOutput, classifiedPoints, cpuClassified, testCol, testRow, cpuTime);
 
 	//step 2b: create a gpuSolution
+	then = currentTime();
 	gpuIndexes = gpuKNN(classifiedPoints, testPoints, classifiedPointsHeader[0], classifiedPointsHeader[1], testPointsHeader[0], testPointsHeader[1]);
-//uncomment out this when you get the sorted GPU stuff going
 	gpuClassified = getClassifications(gpuIndexes, classifiedPoints, classRow, classCol, testRow, neighbors);
-	outputFinal(gpuOutput, classifiedPoints, gpuClassified, testCol, testRow);
+	now = currentTime();
+	gpuTime = now - then;
+	printf("gpuTime %f\ncpuTime %f\n", gpuTime, cpuTime);
+	printf("speedup (cpuTime/gpuTime): %f\n", cpuTime/gpuTime);
+	outputFinal(gpuOutput, classifiedPoints, gpuClassified, testCol, testRow, gpuTime);
 
 	//step six: free up memory
 	freeIntDoublePointer(classifiedPoints, classifiedPointsHeader[1]);
