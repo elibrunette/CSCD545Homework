@@ -11,34 +11,72 @@
 
 void usage() {
 	printf("Usage: ./knn numberOfNeighbors inputClassificationsFile inputTestFile  cpuOutputClassificationsFile gpuOutputClassificationsFile\n");
+	printf("Usage: ./knn numberOfNeighbors numberOfTestRow numberOfTestColumns numberOfClassifiedColumns cpuOutput gpuOutput\n");
 	exit(-1);
 }
 
 int main(int argc, char * argv[]) {
 	//step zero: check the input from the user and store input from the user
-	if(argc != 6)
+	if(argc <6 || argc >7)
 		usage();
 
+	int flag = 0;
 	//initalize variables
-	char * initialSetup = argv[2];
-	char * testCases = argv[3];
-	char * cpuOutput = argv[4];
-	char * gpuOutput = argv[5];
 	int neighbors = atoi(argv[1]);
+	char * initialSetup;
+	char * testCases;
+	char * cpuOutput;
+	char * gpuOutput;
+	int * classifiedPointsHeader;
+	int * testPointsHeader;
+	FILE * initialFin;
+	FILE * test;
+
+	int ** classifiedPoints;
+	int ** testPoints;
+
+	int testCol, testRow, classCol, classRow;
+
+	if(argc == 6) {
+		initialSetup = argv[2];
+		testCases = argv[3];
+		cpuOutput = argv[4];
+		gpuOutput = argv[5];
+
+		//variables for step one
+
+		initialFin = fopen(initialSetup, "r");
+		classifiedPointsHeader = getHeader(initialFin);
+		classCol = classifiedPointsHeader[0];
+		classRow = classifiedPointsHeader[1];
+
+
+		test = fopen(testCases, "r");
+		testPointsHeader = getHeader(test);
+		testCol = testPointsHeader[0];
+		testRow = testPointsHeader[1];
+
+		//Step one: read in file for orginal values
+		classifiedPoints = readFile(initialFin, classCol, classRow);
+		testPoints = readFile(test, testCol, testRow);
+		flag = 1;
+
+	}else if(argc == 7) {
+		testRow = atoi(argv[2]);
+		testCol = atoi(argv[3]);
+		classRow = atoi(argv[4]);
+		classCol = testCol + 1;
+		cpuOutput = argv[5];
+		gpuOutput = argv[6];
+
+		//testPoints = createTestPoints(testRow, testCol);
+		//classifiedPoints = createClassifiedPoints(classRow, classCol);
+	}else {
+		usage();
+	}
+	
 	//printf("initialSetup: %s\n\n\n", argv[2]);
 
-	//variables for step one
-	int ** classifiedPoints;
-	FILE * initialFin = fopen(initialSetup, "r");
-	int * classifiedPointsHeader = getHeader(initialFin);
-	int classCol = classifiedPointsHeader[0];
-	int classRow = classifiedPointsHeader[1];
-
-	int ** testPoints;
-	FILE * test = fopen(testCases, "r");
-	int * testPointsHeader = getHeader(test);
-	int testCol = testPointsHeader[0];
-	int testRow = testPointsHeader[1];
 	
 	//variables for step two
 	int ** cpuIndexes;
@@ -51,9 +89,6 @@ int main(int argc, char * argv[]) {
 	double now, then;
 	double cpuTime, gpuTime;
 
-	//Step one: read in file for orginal values
-	classifiedPoints = readFile(initialFin, classCol, classRow);
-	testPoints = readFile(test, testCol, testRow);
 
 	//step 2a: create a cpuSolution
 	//warm up kernel
@@ -68,7 +103,7 @@ int main(int argc, char * argv[]) {
 
 	//step 2b: create a gpuSolution
 	then = currentTime();
-	gpuIndexes = gpuKNN(classifiedPoints, testPoints, classifiedPointsHeader[0], classifiedPointsHeader[1], testPointsHeader[0], testPointsHeader[1]);
+	gpuIndexes = gpuKNN(classifiedPoints, testPoints, classCol, classRow, testCol, testRow);
 	gpuClassified = getClassifications(gpuIndexes, classifiedPoints, classRow, classCol, testRow, neighbors);
 	now = currentTime();
 	gpuTime = now - then;
@@ -77,9 +112,13 @@ int main(int argc, char * argv[]) {
 	outputFinal(gpuOutput, classifiedPoints, gpuClassified, testCol, testRow, gpuTime);
 
 	//step six: free up memory
-	freeIntDoublePointer(classifiedPoints, classifiedPointsHeader[1]);
-	freeIntDoublePointer(testPoints, testPointsHeader[1]);
-	fclose(test);
+	freeIntDoublePointer(classifiedPoints, classRow);
+	freeIntDoublePointer(testPoints, testRow);
+
+	if(flag == 1) {
+		fclose(test);
+	}
+
 	fclose(initialFin);
 	
 	return 0;
