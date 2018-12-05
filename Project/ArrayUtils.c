@@ -2,6 +2,15 @@
 #include <string.h>
 #include <stdlib.h>
 
+void printSingleIntArray(int * arr, int n) {
+	int x = 0;
+	printf("[");
+	for(x = 0; x < n; x++) {
+		(x ==(n - 1)) ? printf("%d", arr[x]) : printf("%d ", arr[x]);
+	}
+	printf("]\n");
+}
+
 void printSingleArray(double * arr, int n) {
 	int x = 0;
 	printf("["); 
@@ -99,7 +108,7 @@ double ** oneDToTwoD(double * arr, int col, int row) {
 			toReturn[x][y] = arr[i++];
 		}
 	}
-
+	free(arr); 
 	return toReturn;
 }
 

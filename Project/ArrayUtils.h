@@ -1,3 +1,5 @@
+void printSingleIntArray(int * arr, int n);
+
 void printSingleArray(double * arr, int n);
 
 void print2DArray(int ** arr, int col, int row);

@@ -1,11 +1,14 @@
-knn: gpuKNN.o knn.o FileUtils.o ArrayUtils.o cpuKNN.o
-	nvcc -arch=sm_30 -o knn gpuKNN.o knn.o FileUtils.o ArrayUtils.o cpuKNN.o -I.
+knn: gpuKNN.o knn.o FileUtils.o ArrayUtils.o cpuKNN.o mergeSortInterface.o
+	nvcc -arch=sm_30 -o knn gpuKNN.o knn.o FileUtils.o ArrayUtils.o cpuKNN.o mergeSortInterface.o -I.
 
 gpuKNN.o: gpuKNN.cu
 	nvcc -arch=sm_30 -c gpuKNN.cu
 
 cpuKNN.o: cpuKNN.c cpuKNN.h
 	g++ -c -x c++ cpuKNN.c -I.
+
+mergeSortInterface.o: mergeSortInterface.cu
+	nvcc -arch=sm_30 -c mergeSortInterface.cu
 
 knn.o: knn.c knn.h
 	g++ -c -x c++ knn.c -I. 
