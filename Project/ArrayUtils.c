@@ -6,7 +6,7 @@ void printSingleIntArray(int * arr, int n) {
 	int x = 0;
 	printf("[");
 	for(x = 0; x < n; x++) {
-		(x ==(n - 1)) ? printf("%d", arr[x]) : printf("%d ", arr[x]);
+		(x ==(n - 1)) ? printf("%d\n", arr[x]) : printf("%d ", arr[x]);
 	}
 	printf("]\n");
 }
@@ -15,7 +15,7 @@ void printSingleArray(double * arr, int n) {
 	int x = 0;
 	printf("["); 
 	for( x = 0; x < n; x++) {
-		(x == (n - 1)) ? printf("%f", arr[x]) : printf("%f ", arr[x]);
+		(x == (n - 1)) ? printf("%f\n", arr[x]) : printf("%f ", arr[x]);
 	}
 	printf("]/n");
 }

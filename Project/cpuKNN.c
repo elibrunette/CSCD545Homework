@@ -27,16 +27,16 @@ double ** cpuKNNSolution(int ** classifiedPoints, int ** testPoints, int classCo
 		printf("\n");
 	}
 	double ** sortedDistances = oneDToTwoD(temp, classRow, testRow);
-	printf("notSortedDistance array:\n");
-	print2DDoubleArray(sortedDistances, classRow, testRow);
-	printf("right before mergeSort in cpuKNNSolution\n");
+	//printf("notSortedDistance array:\n");
+	//print2DDoubleArray(sortedDistances, classRow, testRow);
+	//printf("right before mergeSort in cpuKNNSolution\n");
 
 	indexes = mergeSortForKNN(sortedDistances, classCol, classRow, testCol, testRow);
 
-	printf("\n\n\nsortedDistances array: /n");
-	print2DDoubleArray(sortedDistances, classRow, testRow);
-	printf("Indexes for sorted array:\n");
-	print2DArray(indexes, classRow, testRow);
+	//printf("\n\n\nsortedDistances array: /n");
+	//print2DDoubleArray(sortedDistances, classRow, testRow);
+	//printf("Indexes for sorted array:\n");
+	//print2DArray(indexes, classRow, testRow);
 
 	//find the classified values to return
 
