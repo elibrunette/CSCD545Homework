@@ -26,13 +26,13 @@ int ** cpuKNNSolution(int ** classifiedPoints, int ** testPoints, int classCol, 
 		printf(" "); //I HAVE NO IDEA WHY YOU HAVE TO BE HERE
 	}
 	double ** sortedDistances = oneDToTwoD(temp, classRow, testRow);
-	//printf("notSortedDistance array:\n");
-	//print2DDoubleArray(sortedDistances, classRow, testRow);
+	printf("notSortedDistance array:\n");
+	print2DDoubleArray(sortedDistances, classRow, testRow);
 	//printf("right before mergeSort in cpuKNNSolution\n");
 
 	indexes = mergeSortForKNN(sortedDistances, classCol, classRow, testCol, testRow);
 
-	//printf("\n\n\nsortedDistances array: /n");
+	//printf("\n\n\nsortedDistances array: \n");
 	//print2DDoubleArray(sortedDistances, classRow, testRow);
 	//printf("Indexes for sorted array:\n");
 	//print2DArray(indexes, classRow, testRow);
@@ -84,6 +84,6 @@ int * getClassifications(int ** indexes, int ** classifiedPoints, int classRow, 
 		}
 	}
 
-	printSingleIntArray(toReturn, testRow);
+	//printSingleIntArray(toReturn, testRow);
 	return toReturn;
 }

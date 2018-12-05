@@ -4,10 +4,11 @@
 #include <string.h>
 
 #include "ArrayUtils.h"
+#include "mergeSortInterface.h"
 
 __global__ void gpuKNNSolution(int * d_classified, int * d_test, double * d_result, int classCol, int classRow, int testCol, int testRow);
 
-double *  gpuKNN(int ** classified, int ** test, int classCol, int classRow, int testCol, int testRow) {
+int **  gpuKNN(int ** classified, int ** test, int classCol, int classRow, int testCol, int testRow) {
 	//initialize host variables
 	int classifiedN = classCol * classRow;
 	int testN = testRow * testCol;
@@ -21,6 +22,7 @@ double *  gpuKNN(int ** classified, int ** test, int classCol, int classRow, int
 	int * d_test;
 	int * d_classified;
 	double * d_result;
+	int ** indexes;
 
 	//memory allocation
 	double * toReturn = (double *) calloc(toReturnN, sizeof(double));
@@ -40,7 +42,7 @@ double *  gpuKNN(int ** classified, int ** test, int classCol, int classRow, int
 	grid.y = 1;
 
 	printf("Made it to right before the kernel\n");
-	printf("ClassRow: %d\n TestRow: %d\n\n\n", classRow, testRow);
+	//printf("ClassRow: %d\n TestRow: %d\n\n\n", classRow, testRow);
 	//call kernel
 	gpuKNNSolution<<<grid, block>>>(d_classified, d_test, d_result, classCol, classRow, testCol, testRow);
 
@@ -56,12 +58,20 @@ double *  gpuKNN(int ** classified, int ** test, int classCol, int classRow, int
 
 	//copy cpu from here using toReturn as the unsorted Distance array
 	
+	double ** sortedDistances = oneDToTwoD(toReturn, classRow, testRow);
+	printf("not sortedDistance array:\n");
+	print2DDoubleArray(sortedDistances, classRow, testRow);
+	printf("about to compute indexes in gpu\n");
 
-	return toReturn;
+	indexes = mergeSortForKNN(sortedDistances, classCol, classRow, testCol, testRow);
+
+	printf("Sorted gpu indexes\n");
+	print2DArray(indexes, classRow, testRow);
+
+	return indexes;
 }
 
 __global__ void gpuKNNSolution(int * d_classified, int * d_test, double * d_result, int classCol, int classRow, int testCol, int testRow) {
-	int x = 0;
 	int y = 0;
 	int i = blockIdx.x * blockDim.x + threadIdx.x;
 	int row = i / classRow;

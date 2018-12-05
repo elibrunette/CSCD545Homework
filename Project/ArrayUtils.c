@@ -17,7 +17,7 @@ void printSingleArray(double * arr, int n) {
 	for( x = 0; x < n; x++) {
 		(x == (n - 1)) ? printf("%f\n", arr[x]) : printf("%f ", arr[x]);
 	}
-	printf("]/n");
+	printf("]\n");
 }
 
 void print2DArray(int ** arr, int col, int row) {

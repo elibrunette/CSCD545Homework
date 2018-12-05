@@ -42,23 +42,26 @@ int main(int argc, char * argv[]) {
 	//variables for step two
 	int ** cpuIndexes;
 	double * gpuDistanceArray;
+	int ** gpuIndexes;
 	int * cpuClassified;
+	int * gpuClassified;
 
 	//Step one: read in file for orginal values
 	classifiedPoints = readFile(initialFin, classCol, classRow);
 	testPoints = readFile(test, testCol, testRow);
 
 	//step 2a: create a cpuSolution
-	//cpuIndexes = cpuKNNSolution(classifiedPoints, testPoints, classCol, classRow, testCol, testRow);
-	//print2DDoubleArray(cpuDistanceArray, classifiedPointsHeader[1], testPointsHeader[1]);
-	//outputToFile(cpuOutput, cpuDistanceArray, testPointsHeader[1], classifiedPointsHeader[1]);
-	//cpuClassified = getClassifications(cpuIndexes, classifiedPoints, classRow, classCol, testRow, neighbors);
-	//outputFinal(cpuOutput, classifiedPoints, cpuClassified, testCol, testRow);
+	cpuIndexes = cpuKNNSolution(classifiedPoints, testPoints, classCol, classRow, testCol, testRow);
+	print2DArray(cpuIndexes, classifiedPointsHeader[1], testPointsHeader[1]);
+	//outputToFile("cpuIndexes", cpuIndexes, testPointsHeader[1], classifiedPointsHeader[1]);
+	cpuClassified = getClassifications(cpuIndexes, classifiedPoints, classRow, classCol, testRow, neighbors);
+	outputFinal(cpuOutput, classifiedPoints, cpuClassified, testCol, testRow);
 
 	//step 2b: create a gpuSolution
-	gpuDistanceArray = gpuKNN(classifiedPoints, testPoints, classifiedPointsHeader[0], classifiedPointsHeader[1], testPointsHeader[0], testPointsHeader[1]);
-	double ** distance = oneDToTwoD(gpuDistanceArray, classifiedPointsHeader[1], testPointsHeader[1]);
-	print2DDoubleArray(distance, classifiedPointsHeader[1], testPointsHeader[1]);
+	gpuIndexes = gpuKNN(classifiedPoints, testPoints, classifiedPointsHeader[0], classifiedPointsHeader[1], testPointsHeader[0], testPointsHeader[1]);
+//uncomment out this when you get the sorted GPU stuff going
+	//gpuClassified = getClassifications(gpuIndexes, classifiedPoints, classRow, classCol, testRow, neighbors);
+	//outputFinal(gpuOutput, classifiedPoints, gpuClassified, testCol, testRow);
 
 	//step six: free up memory
 	freeIntDoublePointer(classifiedPoints, classifiedPointsHeader[1]);
