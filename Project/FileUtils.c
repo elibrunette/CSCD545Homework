@@ -84,7 +84,7 @@ void outputToFile(const char * fileName, double ** arr, int row, int col) {
 	fclose(fout);
 }
 
-void outputFinal(const char * fileName, int ** testPoints, int * classifiedPoints, int testCol, int testRow) {
+void outputFinal(const char * fileName, int ** testPoints, int * classifiedPoints, int testCol, int testRow, double time) {
 	FILE * fout = fopen(fileName, "w");
 	int x = 0; 
 	int y = 0; 
@@ -94,4 +94,6 @@ void outputFinal(const char * fileName, int ** testPoints, int * classifiedPoint
 		}
 		fprintf(fout, "%d\n", classifiedPoints[x]);
 	}
+	fprintf(fout, "%f", time);
+
 }
