@@ -53,7 +53,7 @@ int main(int argc, char * argv[]) {
 	//print2DDoubleArray(cpuDistanceArray, classifiedPointsHeader[1], testPointsHeader[1]);
 	//outputToFile(cpuOutput, cpuDistanceArray, testPointsHeader[1], classifiedPointsHeader[1]);
 	cpuClassified = getClassifications(cpuIndexes, classifiedPoints, classRow, classCol, testRow, neighbors);
-	
+	outputFinal("cpuOutput", classifiedPoints, cpuClassified, testCol, testRow);
 
 	//step 2b: create a gpuSolution
 	//gpuDistanceArray = gpuKNN(classifiedPoints, testPoints, classifiedPointsHeader[0], classifiedPointsHeader[1], testPointsHeader[0], testPointsHeader[1]);
