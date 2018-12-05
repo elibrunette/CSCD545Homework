@@ -112,3 +112,40 @@ double ** oneDToTwoD(double * arr, int col, int row) {
 	return toReturn;
 }
 
+int ** createTestPoints( int testRow, int testCol) {
+	int ** toReturn = createInt2DArray(testCol, testRow);
+	int x = 0;
+	int y = 0;
+	int random = 1;
+	
+	for( x = 0; x < testRow; x++) {
+		for(y = 0; y < testCol; y++) {
+			random = (int) rand() % 100 + 1;
+			//printf("%d ", random);
+			toReturn[x][y] = random;
+		}
+	}
+	
+	return toReturn;
+}
+
+int ** createClassifiedPoints( int classRow, int classCol) {
+	int ** toReturn = createInt2DArray(classCol, classRow);
+	int x = 0; 
+	int y = 0;
+	int random;	
+
+	for(x = 0; x < classRow; x++) {
+		printf("[");
+		for( y = 0; y < classCol - 1; y++) {
+			random = (int) rand() % 100 + 1;
+			//printf("%d ", random);
+			toReturn[x][y] = random;
+		}
+		random =  rand() % 5 + 2;
+		//printf("%d", random);
+		toReturn[x][classCol - 1] = random;
+		//printf("]\n");
+	}
+	return toReturn;
+}

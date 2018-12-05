@@ -15,3 +15,7 @@ double ** createDouble2DArray(int col, int row);
 int ** createInt2DArray(int col, int row);
 
 double ** oneDToTwoD(double * arr, int col, int row);
+
+int ** createTestPoints( int testRow, int testCol);
+
+int ** createClassifiedPoints( int classRow, int classCol);

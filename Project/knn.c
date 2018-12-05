@@ -69,8 +69,8 @@ int main(int argc, char * argv[]) {
 		cpuOutput = argv[5];
 		gpuOutput = argv[6];
 
-		//testPoints = createTestPoints(testRow, testCol);
-		//classifiedPoints = createClassifiedPoints(classRow, classCol);
+		testPoints = createTestPoints(testRow, testCol);
+		classifiedPoints = createClassifiedPoints(classRow, classCol);
 	}else {
 		usage();
 	}
