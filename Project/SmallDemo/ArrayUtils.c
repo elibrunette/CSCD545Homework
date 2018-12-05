@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
 
 void printSingleIntArray(int * arr, int n) {
 	int x = 0;
@@ -117,15 +118,17 @@ int ** createTestPoints( int testRow, int testCol) {
 	int x = 0;
 	int y = 0;
 	int random = 1;
-	
+	srand(time(NULL));
 	for( x = 0; x < testRow; x++) {
+		printf("[");
 		for(y = 0; y < testCol; y++) {
-			random = (int) rand() % 100 + 1;
-			//printf("%d ", random);
+			random = rand() % 100;
+			printf("%d ", random);
 			toReturn[x][y] = random;
 		}
+		printf("]\n");
 	}
-	
+	printf("\n");
 	return toReturn;
 }
 
@@ -134,18 +137,18 @@ int ** createClassifiedPoints( int classRow, int classCol) {
 	int x = 0; 
 	int y = 0;
 	int random;	
-
+	srand(time(NULL) + 2018);
 	for(x = 0; x < classRow; x++) {
 		printf("[");
 		for( y = 0; y < classCol - 1; y++) {
-			random = (int) rand() % 100 + 1;
-			//printf("%d ", random);
+			random = rand() % 100;
+			printf("%d ", random);
 			toReturn[x][y] = random;
 		}
 		random =  rand() % 5 + 2;
-		//printf("%d", random);
+		printf("%d", random);
 		toReturn[x][classCol - 1] = random;
-		//printf("]\n");
+		printf("]\n");
 	}
 	return toReturn;
 }
