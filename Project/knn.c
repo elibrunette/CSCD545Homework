@@ -30,24 +30,29 @@ int main(int argc, char * argv[]) {
 	int ** classifiedPoints;
 	FILE * initialFin = fopen(initialSetup, "r");
 	int * classifiedPointsHeader = getHeader(initialFin);
+	int classCol = classifiedPointsHeader[0];
+	int classRow = classifiedPointsHeader[1];
 
 	int ** testPoints;
 	FILE * test = fopen(testCases, "r");
 	int * testPointsHeader = getHeader(test);
-
+	int testCol = testPointsHeader[0];
+	int testRow = testPointsHeader[1];
+	
 	//variables for step two
-	double ** cpuDistanceArray;
+	int ** cpuIndexes;
 	double * gpuDistanceArray;
+	int * cpuClassified;
 
 	//Step one: read in file for orginal values
-	classifiedPoints = readFile(initialFin, classifiedPointsHeader[0], classifiedPointsHeader[1]);
-	testPoints = readFile(test, testPointsHeader[0], testPointsHeader[1]);
+	classifiedPoints = readFile(initialFin, classCol, classRow);
+	testPoints = readFile(test, testCol, testRow);
 
 	//step 2a: create a cpuSolution
-	cpuDistanceArray = cpuKNNSolution(classifiedPoints, testPoints, classifiedPointsHeader[0], classifiedPointsHeader[1], testPointsHeader[0], testPointsHeader[1]);
+	cpuIndexes = cpuKNNSolution(classifiedPoints, testPoints, classCol, classRow, testCol, testRow);
 	//print2DDoubleArray(cpuDistanceArray, classifiedPointsHeader[1], testPointsHeader[1]);
 	//outputToFile(cpuOutput, cpuDistanceArray, testPointsHeader[1], classifiedPointsHeader[1]);
-
+	cpuClassified = getClassifications(cpuIndexes, classifiedPoints, classRow, classCol, testRow, neighbors);
 	
 
 	//step 2b: create a gpuSolution
